@@ -1,129 +1,48 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interactive Canvas Shape Editor</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header>
-    <h1>Interactive Canvas Shape Editor</h1>
-    <p><strong>Complete Name:</strong> Bhea M. Corono</p>
-    <p><strong>Sex:</strong> Female</p>
-    <p><strong>Address:</strong> Bagacay, San Jose Camarines Sur</p>
-    <p><strong>Course, Year, and Section:</strong> BSIT-2A</p>
-    <p><strong>Name of School:</strong> Partido State University</p>
-    <p><strong>Semester and Academic Year:</strong> 2nd Semester, A.Y. 2024–2025</p>
-    <p><strong>Subject Code and Title:</strong> PF2 - Event Driven Programming </p>
-    <p><strong>Name of Subject Instructor:</strong> Arjay F. Abio</p>
-  </header>
+const words = ["apple", "amber", "angle", "actor", "apron"];
+let secretWord = words[Math.floor(Math.random() * words.length)];
+let attempts = 5;
+document.getElementById("hint-letter").innerText = secretWord.charAt(0).toUpperCase();
 
-  <main>
-    <canvas id="canvas" width="600" height="400"></canvas>
-  </main>
+document.getElementById("word-display").innerHTML = "_ ".repeat(secretWord.length).trim();
 
-  <script src="script.js"></script>
-</body>
-</html><style>body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px;
+function checkGuess() {
+    let guess = document.getElementById("user-guess").value.trim().toLowerCase();
+    let messageElement = document.getElementById("message");
+    
+    if (guess === "") {
+        messageElement.innerHTML = "<span style='color:red;'>Please enter a word!</span>";
+        return;
+    }
+    
+    if (guess === secretWord) {
+        document.getElementById("word-display").innerHTML = secretWord.toUpperCase().split("").map(letter => `<span style='color:navy;'>${letter}</span>`).join(" ");
+        messageElement.innerHTML = "🏆 <span style='color:white;'>Congratulations! You guessed the secret word!</span>";
+        document.getElementById("play-again").style.display = "block";
+        document.getElementById("user-guess").disabled = true;
+        return;
+    }
+    
+    attempts--;
+    document.getElementById("word-display").innerHTML = guess.split("").map((letter, i) => {
+        return letter === secretWord[i] ? `<span style='color:navy;'>${letter.toUpperCase()}</span>` : `<span style='color:red;'>${letter.toUpperCase()}</span>`;
+    }).join(" ");
+    
+    if (attempts > 0) {
+        messageElement.innerHTML = `<span style='color:red;'>Incorrect guess. You have ${attempts} attempts left!</span>`;
+    } else {
+        messageElement.innerHTML = `<span style='color:red;'>Game over! The secret word was '${secretWord}'.</span>`;
+        document.getElementById("play-again").style.display = "block";
+        document.getElementById("user-guess").disabled = true;
+    }
 }
 
-header {
-  text-align: center;
-  margin-bottom: 20px;
+function resetGame() {
+    secretWord = words[Math.floor(Math.random() * words.length)];
+    attempts = 5;
+    document.getElementById("hint-letter").innerText = secretWord.charAt(0).toUpperCase();
+    document.getElementById("word-display").innerHTML = "_ ".repeat(secretWord.length).trim();
+    document.getElementById("message").innerHTML = "";
+    document.getElementById("user-guess").value = "";
+    document.getElementById("user-guess").disabled = false;
+    document.getElementById("play-again").style.display = "none";
 }
-
-canvas {
-  border: 2px solid #000;
-  cursor: pointer;
-}</style><script>const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-
-let circles = [];
-let selectedCircle = null;
-let isDragging = false;
-
-canvas.addEventListener('mousedown', function (e) {
-  const { x, y } = getMousePos(e);
-  const clicked = getCircleAt(x, y);
-
-  if (clicked) {
-    selectedCircle = clicked;
-    isDragging = true;
-  } else {
-    const newCircle = {
-      x,
-      y,
-      r: 20,
-      color: 'blue'
-    };
-    circles.push(newCircle);
-    selectedCircle = newCircle;
-  }
-
-  drawCircles();
-});
-
-canvas.addEventListener('mousemove', function (e) {
-  if (isDragging && selectedCircle) {
-    const { x, y } = getMousePos(e);
-    selectedCircle.x = x;
-    selectedCircle.y = y;
-    drawCircles();
-  }
-});
-
-canvas.addEventListener('mouseup', function () {
-  isDragging = false;
-});
-
-canvas.addEventListener('wheel', function (e) {
-  if (selectedCircle) {
-    e.preventDefault();
-    const delta = e.deltaY < 0 ? 1 : -1;
-    selectedCircle.r = Math.max(5, selectedCircle.r + delta);
-    drawCircles();
-  }
-});
-
-document.addEventListener('keydown', function (e) {
-  if (e.key === 'Delete' && selectedCircle) {
-    circles = circles.filter(c => c !== selectedCircle);
-    selectedCircle = null;
-    drawCircles();
-  }
-});
-
-function getMousePos(evt) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: evt.clientX - rect.left,
-    y: evt.clientY - rect.top
-  };
-}
-
-function getCircleAt(x, y) {
-  for (let i = circles.length - 1; i >= 0; i--) {
-    const c = circles[i];
-    const dx = x - c.x;
-    const dy = y - c.y;
-    if (Math.sqrt(dx * dx + dy * dy) <= c.r) return c;
-  }
-  return null;
-}
-
-function drawCircles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (const c of circles) {
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-    ctx.fillStyle = c === selectedCircle ? 'red' : c.color;
-    ctx.fill();
-    ctx.closePath();
-  }
-}</script>
